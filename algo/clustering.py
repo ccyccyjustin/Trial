@@ -3,7 +3,7 @@ import numpy as np
 def distance(u,v,p):
     return np.mean(abs(u-v)**p,axis = 1)
   
-def wkmeans(X,k=2,p=1,threshold=1e-3,max_iter = 1000,state=200,verbose = True, k_means_pp = True):
+def wkmeans(X,k=2,p=1,threshold=1e-3,max_iter = 1000,random_state=None,verbose = True, k_means_pp = True):
     
     """
     X: M x N matrix with M log_ret time_series
@@ -14,7 +14,7 @@ def wkmeans(X,k=2,p=1,threshold=1e-3,max_iter = 1000,state=200,verbose = True, k
     
     X_sorted = np.sort(X,axis = 1)
     
-    rng = np.random.default_rng(state)
+    rng = np.random.default_rng(random_state)
     
     if (k_means_pp):
         barycenters_0 = X_sorted[rng.choice(X.shape[0])].reshape(1,-1)

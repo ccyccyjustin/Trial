@@ -1,7 +1,7 @@
 import numpy as np
 
-def distance(u,v,p):
-    return np.mean(abs(u-v)**p,axis = 1)
+#def distance(u,v,p):
+#    return np.mean(abs(u-v)**p,axis = 1)
   
 def wkmeans(X,k=2,p=1,threshold=1e-3,max_iter = 1000,random_state=None,verbose = True, k_means_pp = True):
     

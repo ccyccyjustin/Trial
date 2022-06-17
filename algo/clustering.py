@@ -1,9 +1,6 @@
 import numpy as np
 
-#def distance(u,v,p):
-#    return np.mean(abs(u-v)**p,axis = 1)
-  
-def wkmeans(X,k=2,p=1,threshold=1e-3,max_iter = 1000,random_state=None,verbose = True, k_means_pp = True):
+def wkmeans(X,k=2,p=1,threshold=1e-3,max_iter = 1000,max_retries = 5):
     
     """
     X: M x N matrix with M log_ret time_series
@@ -14,58 +11,69 @@ def wkmeans(X,k=2,p=1,threshold=1e-3,max_iter = 1000,random_state=None,verbose =
     
     X_sorted = np.sort(X,axis = 1)
     
-    rng = np.random.default_rng(random_state)
     
-    if (k_means_pp):
-        barycenters_0 = X_sorted[rng.choice(X.shape[0])].reshape(1,-1)
+    for trial in range(max_retries):
         
-        for i in range(k-1):
-            min_d = np.array([distance(X_sorted,barycenters_0[i],p) for i in range(barycenters_0.shape[0])]).min(axis = 0)
-            barycenters_0 = np.vstack([barycenters_0,X_sorted[min_d.argmax()]])                  
-
-    else:
-        barycenters_0 = X_sorted[rng.choice(X.shape[0],k,replace=False)]
-        
-        
-    barycenters_1 = None
-    cluster = None
-    counter = 0
+        rng = np.random.default_rng(None)
     
-
-    while (counter <= max_iter):
-        
-        cluster = np.array([distance(X_sorted,barycenters_0[i],p) for i in range(k)]).argmin(axis = 0)
-        
-        if (p == 1):
-            
-            barycenters_1 = np.array([np.median(X_sorted[cluster == i], axis = 0) for i in range(k)])
-
-        elif (p > 1):
-            
-            barycenters_1 = np.array([np.mean(X_sorted[cluster == i], axis = 0) for i in range(k)]) 
-            
-        counter += 1
-        
-        loss = np.sum([distance(X_sorted[cluster == i],barycenters_1[i],p).sum() for i in range(k)])
-        
-        if (verbose):
-            
-            print("Mean Loss after {} iterations: {}".format(counter,loss/len(X)))
-        
-        
-        if (sum(distance(barycenters_0,barycenters_1,p)) < threshold):
-        
-            print("Convergence Reached! Number of Iterations: {}".format(counter))
-            
-            break
-        
-        else:
-            
-            barycenters_0 = barycenters_1.copy()
-            
-
-    if(counter == max_iter):
-        
-        print('Maximum Number of Iteration Reached!')
+        barycenters_0 = X_sorted[rng.choice(X.shape[0],k,replace=False)]    
+        barycenters_1 = np.empty((k,X.shape[1]))
     
-    return barycenters_1, cluster
+    
+        for counter in range(max_iter):
+            
+            break_out_flag = False
+        
+            clusters = np.array([np.mean(abs(X_sorted-barycenters_0[i])**p,axis = 1) for i in range(k)]).argmin(axis = 0)
+            # This cannot be written in the same for loop as the updated barycenters depend on the current clusters
+        
+            for i in range(k):
+                
+                if (sum(clusters == i) == 0):
+                    
+                    break_out_flag = True
+                    
+                    break
+                
+        
+                if (p == 1):
+            
+                    barycenters_1[i] = np.median(X_sorted[clusters == i], axis = 0)
+                
+                
+
+                elif (p > 1):
+            
+                    barycenters_1[i] = np.mean(X_sorted[clusters == i], axis = 0)
+                
+            if (break_out_flag == True):
+                
+                print('Empty cluster found, retrying again.')
+                
+                break
+            
+
+            loss = np.sum(abs(barycenters_0 - barycenters_1)**p) / X.shape[1]
+        
+            print("Loss after {} iterations: {}".format(counter+1,loss))
+        
+
+            if (loss < threshold):
+        
+                print("Convergence Reached! Number of Iterations: {}".format(counter+1))
+            
+                return barycenters_1, clusters
+        
+            else:
+            
+                barycenters_0 = barycenters_1.copy()
+            
+
+        print('Maximum Number of Iteration Reached! Retrying again!')
+    
+        
+    
+    print('Clustering fails after {} retries'.format(max_retries))
+
+
+

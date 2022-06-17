@@ -30,12 +30,11 @@ class TestKMeans(unittest.TestCase):
         
         center_0 = np.median(np.sort(np.vstack([self.X[:25],self.X[38]]),axis = 1),axis = 0)
         center_1 = np.median(np.sort(np.vstack([self.X[25:38],self.X[39:]]),axis = 1),axis = 0)
-        diff_sum_0 = (center_0 - self.centers[0]).sum()
-        diff_sum_1 = (center_1 - self.centers[1]).sum()
+        diff_sum_0 = abs(center_0 - self.centers[0]).sum()
+        diff_sum_1 = abs(center_1 - self.centers[1]).sum()
         
         self.assertTrue((diff_sum_0 < 1e-3) & (diff_sum_1 < 1e-3),
-                        msg = 'Sum of Error is: {} and {}'.format(diff_sum_0,diff_sum_1))
+                        msg = 'Sum of Absolute Error is: {} and {}'.format(diff_sum_0,diff_sum_1))
 
 if __name__ == '__main__':
     unittest.main()
-   

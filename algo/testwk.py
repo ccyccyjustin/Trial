@@ -12,7 +12,8 @@ class TestKMeans(unittest.TestCase):
         x1 = rng.normal(0,1,size = (25,10))
         x2 = rng.normal(3,3,size = (25,10))
         self.X = np.concatenate([x1,x2])
-        self.centers, self.labels = wkmeans(self.X,k=2,p=1)
+        self.centers, self.labels = wkmeans(self.X,k=2,p=1,threshold = 1e-8) 
+        # For this dataset, we can pick an aggressive threshold since it is well separated 
         
         if (self.labels[0] == 1):
             self.labels = 1 - self.labels
@@ -37,3 +38,4 @@ class TestKMeans(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+   
